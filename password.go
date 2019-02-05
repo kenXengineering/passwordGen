@@ -19,6 +19,18 @@ const (
 
 	// Symbols is the list of symbols.
 	Symbols = "~!@#$%^&*()_+-={}[]"
+
+	// LowerLetters is the list of lowercase letters.
+	LowerLettersNoAmbig = "abcdefghjkmnpqrstuvwxyz"
+
+	// UpperLetters is the list of uppercase letters.
+	UpperLettersNoAmbig = "ABCDEFGHJKMNPQRSTUVWXYZ"
+
+	// Digits is the list of permitted digits.
+	DigitsNoAmbig = "23456789"
+
+	// Symbols is the list of symbols.
+	SymbolsNoAmbig = "~!@#$%^&*()_+-={}[]"
 )
 
 var (
@@ -29,6 +41,11 @@ var (
 // Generator is the stateful generator which can be used to customize the list
 // of letters, digits, and/or symbols.
 type generator struct {
+	lowerLetters string
+	upperLetters string
+	digits       string
+	symbols      string
+
 	withLower   bool
 	withUpper   bool
 	withDigits  bool
@@ -42,7 +59,21 @@ type generator struct {
 
 // Generator Returns a new empty generator
 func Generator() *generator {
-	return &generator{}
+	return &generator{
+		lowerLetters: LowerLetters,
+		upperLetters: UpperLetters,
+		digits:       Digits,
+		symbols:      Symbols,
+	}
+}
+
+// NoAmbiguousCharacters ensures no ambiguous characters will be in the password
+func (g *generator) NoAmbiguousCharacters() *generator {
+	g.lowerLetters = LowerLettersNoAmbig
+	g.upperLetters = UpperLettersNoAmbig
+	g.digits = DigitsNoAmbig
+	g.symbols = SymbolsNoAmbig
+	return g
 }
 
 // WithLower adds lower case letters to the password pool.
@@ -59,56 +90,77 @@ func (g *generator) WithUpper() *generator {
 	return g
 }
 
-// WithDigits add digits to the password pool
+// WithDigits adds digits to the password pool
 // Does not guarantee digits will be present in the generated password.
 func (g *generator) WithDigits() *generator {
 	g.withDigits = true
 	return g
 }
 
-// WithSymbols adds symbols to the password bool.
+// WithSymbols adds symbols to the password pool.
 // Does not guarantee symbols will be present in the generated password.
 func (g *generator) WithSymbols() *generator {
 	g.withSymbols = true
 	return g
 }
 
-// RequireLower guarantee that at least N number of lower case letters will be in the generated password.
+// RequireLower guarantees that at least N number of lower case letters will be in the generated password.
 func (g *generator) RequireLower(N int) *generator {
 	g.withLower = true
 	g.requireLower = N
 	return g
 }
 
-// RequireUpper guarantee that at least N number of upper case letters will be in the generated password.
+// RequireUpper guarantees that at least N number of upper case letters will be in the generated password.
 func (g *generator) RequireUpper(N int) *generator {
 	g.withUpper = true
 	g.requireUpper = N
 	return g
 }
 
-// RequireDigits guarantee that at least N number of digits will be in the generated password.
+// RequireDigits guarantees that at least N number of digits will be in the generated password.
 func (g *generator) RequireDigits(N int) *generator {
 	g.withDigits = true
 	g.requireDigits = N
 	return g
 }
 
-// RequireSymbols guarantee that at least N number of symbols will be in the generated password.
+// RequireSymbols guarantees that at least N number of symbols will be in the generated password.
 func (g *generator) RequireSymbols(N int) *generator {
 	g.withSymbols = true
 	g.requireSymbols = N
 	return g
 }
 
-/* Generate will generate a password at the specified length as configured.
-	Example:
-	Genrator().WithLower().WithUpper().WithDigits().WithSymbols().Generate() will generate a password that may contain
- lower character letters, upper character letters, digits, and symbols.
+// ExactLower guarantees that there are exactly N lower case letters in the generated password
+func (g *generator) ExactLower(N int) *generator {
+	g.withLower = false
+	g.requireLower = N
+	return g
+}
 
-	Generator.WithLower().WithUpper().RequireDigits(1).WithSymbols().Generate() will generate a password that may contain
- lower characters, upper charcters, at least 1 digits, and may contain symbols.
-*/
+// ExactUpper guarantees that there are exactly N update case letters in the generated password
+func (g *generator) ExactUpper(N int) *generator {
+	g.withUpper = false
+	g.requireUpper = N
+	return g
+}
+
+// ExactDigits guarantees that there are exactly N digits in the generated password
+func (g *generator) ExactDigits(N int) *generator {
+	g.withDigits = false
+	g.requireDigits = N
+	return g
+}
+
+// ExactSymbols guarantees that there are exactly N symbols in the generated password
+func (g *generator) ExactSymbols(N int) *generator {
+	g.withSymbols = false
+	g.requireSymbols = N
+	return g
+}
+
+// Generate will generate a password at the specified length as configured.
 func (g *generator) Generate(length int) (string, error) {
 	if !g.withLower && !g.withUpper && !g.withDigits && !g.withSymbols {
 		return "", ErrNoCharactersSpecified
@@ -165,16 +217,22 @@ func (g *generator) Generate(length int) (string, error) {
 		// Need to continue building the password pool
 		valuesBuilder := strings.Builder{}
 		if g.withLower {
-			valuesBuilder.WriteString(LowerLetters)
+			valuesBuilder.WriteString(g.lowerLetters)
 		}
 		if g.withUpper {
-			valuesBuilder.WriteString(UpperLetters)
+			valuesBuilder.WriteString(g.upperLetters)
 		}
 		if g.withDigits {
-			valuesBuilder.WriteString(Digits)
+			valuesBuilder.WriteString(g.digits)
 		}
 		if g.withSymbols {
-			valuesBuilder.WriteString(Symbols)
+			valuesBuilder.WriteString(g.symbols)
+		}
+		// The only reason this could be zero is Exact<type> was used and we don't have enough
+		// characters in the password buffer.  Error out as an invalid password generator
+		// was created.
+		if valuesBuilder.Len() == 0 {
+			return "", ErrNoCharactersSpecified
 		}
 		values := valuesBuilder.String()
 		// Fill the password pool up to the defined length
