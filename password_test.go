@@ -163,13 +163,8 @@ func TestGenerator_Generate(t *testing.T) {
 	})
 }
 
-func ExampleGenerator_WithUpper() {
-	pass, err := NewGenerator().
-		WithUpper().
-		WithLower().
-		WithDigits().
-		WithLower().
-		Generate(8)
+func ExampleGenerator_Generate() {
+	pass, err := NewGenerator().WithUpper().WithLower().WithDigits().WithLower().Generate(8)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -177,12 +172,7 @@ func ExampleGenerator_WithUpper() {
 }
 
 func ExampleGenerator_RequireUpper() {
-	pass, err := NewGenerator().
-		RequireUpper(3).
-		WithLower().
-		WithDigits().
-		WithSymbols().
-		Generate(8)
+	pass, err := NewGenerator().RequireUpper(3).WithLower().WithDigits().WithSymbols().Generate(8)
 
 	if err != nil {
 		log.Fatal(err)
@@ -192,10 +182,15 @@ func ExampleGenerator_RequireUpper() {
 }
 
 func ExampleGenerator_ExactUpper() {
-	pass, err := NewGenerator().
-		ExactUpper(3).
-		WithLower().
-		Generate(8)
+	pass, err := NewGenerator().ExactUpper(3).WithLower().Generate(8)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print(pass)
+}
+
+func ExampleGenerator_NoAmbiguousCharacters() {
+	pass, err := NewGenerator().NoAmbiguousCharacters().WithUpper().WithLower().WithDigits().WithSymbols().Generate(16)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -62,7 +62,7 @@ type Generator struct {
 	requireSymbols int
 }
 
-// NewGenerator Returns a new empty generator
+// NewGenerator Returns a new empty generator.
 func NewGenerator() *Generator {
 	return &Generator{
 		lowerLetters: LowerLetters,
@@ -72,7 +72,7 @@ func NewGenerator() *Generator {
 	}
 }
 
-// NoAmbiguousCharacters ensures no ambiguous characters will be in the password
+// NoAmbiguousCharacters ensures no ambiguous characters will be in the password.
 func (g *Generator) NoAmbiguousCharacters() *Generator {
 	g.lowerLetters = LowerLettersNoAmbig
 	g.upperLetters = UpperLettersNoAmbig
@@ -95,7 +95,7 @@ func (g *Generator) WithUpper() *Generator {
 	return g
 }
 
-// WithDigits adds digits to the password pool
+// WithDigits adds digits to the password pool.
 // Does not guarantee digits will be present in the generated password.
 func (g *Generator) WithDigits() *Generator {
 	g.withDigits = true
@@ -137,28 +137,28 @@ func (g *Generator) RequireSymbols(N int) *Generator {
 	return g
 }
 
-// ExactLower guarantees that there are exactly N lower case letters in the generated password
+// ExactLower guarantees that there are exactly N lower case letters in the generated password.
 func (g *Generator) ExactLower(N int) *Generator {
 	g.withLower = false
 	g.requireLower = N
 	return g
 }
 
-// ExactUpper guarantees that there are exactly N update case letters in the generated password
+// ExactUpper guarantees that there are exactly N update case letters in the generated password.
 func (g *Generator) ExactUpper(N int) *Generator {
 	g.withUpper = false
 	g.requireUpper = N
 	return g
 }
 
-// ExactDigits guarantees that there are exactly N digits in the generated password
+// ExactDigits guarantees that there are exactly N digits in the generated password.
 func (g *Generator) ExactDigits(N int) *Generator {
 	g.withDigits = false
 	g.requireDigits = N
 	return g
 }
 
-// ExactSymbols guarantees that there are exactly N symbols in the generated password
+// ExactSymbols guarantees that there are exactly N symbols in the generated password.
 func (g *Generator) ExactSymbols(N int) *Generator {
 	g.withSymbols = false
 	g.requireSymbols = N
