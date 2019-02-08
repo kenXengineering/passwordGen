@@ -1,4 +1,4 @@
-package passwordGen
+package passwordgen
 
 import (
 	"crypto/rand"
@@ -20,27 +20,32 @@ const (
 	// Symbols is the list of symbols.
 	Symbols = "~!@#$%^&*()_+-={}[]"
 
-	// LowerLetters is the list of lowercase letters.
+	// LowerLettersNoAmbig is the list of lowercase letters.
 	LowerLettersNoAmbig = "abcdefghjkmnpqrstuvwxyz"
 
-	// UpperLetters is the list of uppercase letters.
+	// UpperLettersNoAmbig is the list of uppercase letters.
 	UpperLettersNoAmbig = "ABCDEFGHJKMNPQRSTUVWXYZ"
 
-	// Digits is the list of permitted digits.
+	// DigitsNoAmbig is the list of permitted digits.
 	DigitsNoAmbig = "23456789"
 
-	// Symbols is the list of symbols.
+	// SymbolsNoAmbig is the list of symbols.
 	SymbolsNoAmbig = "~!@#$%^&*()_+-={}[]"
 )
 
 var (
-	ErrExceedsTotalLength    = errors.New("the number of required elements exceeds requested password length")
+	// ErrExceedsTotalLength is the error returned when the number of required
+	// elements is greater then the length of the requestd password
+	ErrExceedsTotalLength = errors.New("the number of required elements exceeds requested password length")
+
+	// ErrNoCharactersSpecified is the error returned when a generator is called
+	// without any characters specified
 	ErrNoCharactersSpecified = errors.New("no characters specified in generator")
 )
 
 // Generator is the stateful generator which can be used to customize the list
 // of letters, digits, and/or symbols.
-type generator struct {
+type Generator struct {
 	lowerLetters string
 	upperLetters string
 	digits       string
@@ -57,9 +62,9 @@ type generator struct {
 	requireSymbols int
 }
 
-// Generator Returns a new empty generator
-func Generator() *generator {
-	return &generator{
+// NewGenerator Returns a new empty generator
+func NewGenerator() *Generator {
+	return &Generator{
 		lowerLetters: LowerLetters,
 		upperLetters: UpperLetters,
 		digits:       Digits,
@@ -68,7 +73,7 @@ func Generator() *generator {
 }
 
 // NoAmbiguousCharacters ensures no ambiguous characters will be in the password
-func (g *generator) NoAmbiguousCharacters() *generator {
+func (g *Generator) NoAmbiguousCharacters() *Generator {
 	g.lowerLetters = LowerLettersNoAmbig
 	g.upperLetters = UpperLettersNoAmbig
 	g.digits = DigitsNoAmbig
@@ -78,90 +83,90 @@ func (g *generator) NoAmbiguousCharacters() *generator {
 
 // WithLower adds lower case letters to the password pool.
 // Does not guarantee lower case letters will be present in the generated password.
-func (g *generator) WithLower() *generator {
+func (g *Generator) WithLower() *Generator {
 	g.withLower = true
 	return g
 }
 
 // WithUpper adds upper case letters to the password pool.
 // Does not guarantee upper case letters will be present in the generated password.
-func (g *generator) WithUpper() *generator {
+func (g *Generator) WithUpper() *Generator {
 	g.withUpper = true
 	return g
 }
 
 // WithDigits adds digits to the password pool
 // Does not guarantee digits will be present in the generated password.
-func (g *generator) WithDigits() *generator {
+func (g *Generator) WithDigits() *Generator {
 	g.withDigits = true
 	return g
 }
 
 // WithSymbols adds symbols to the password pool.
 // Does not guarantee symbols will be present in the generated password.
-func (g *generator) WithSymbols() *generator {
+func (g *Generator) WithSymbols() *Generator {
 	g.withSymbols = true
 	return g
 }
 
 // RequireLower guarantees that at least N number of lower case letters will be in the generated password.
-func (g *generator) RequireLower(N int) *generator {
+func (g *Generator) RequireLower(N int) *Generator {
 	g.withLower = true
 	g.requireLower = N
 	return g
 }
 
 // RequireUpper guarantees that at least N number of upper case letters will be in the generated password.
-func (g *generator) RequireUpper(N int) *generator {
+func (g *Generator) RequireUpper(N int) *Generator {
 	g.withUpper = true
 	g.requireUpper = N
 	return g
 }
 
 // RequireDigits guarantees that at least N number of digits will be in the generated password.
-func (g *generator) RequireDigits(N int) *generator {
+func (g *Generator) RequireDigits(N int) *Generator {
 	g.withDigits = true
 	g.requireDigits = N
 	return g
 }
 
 // RequireSymbols guarantees that at least N number of symbols will be in the generated password.
-func (g *generator) RequireSymbols(N int) *generator {
+func (g *Generator) RequireSymbols(N int) *Generator {
 	g.withSymbols = true
 	g.requireSymbols = N
 	return g
 }
 
 // ExactLower guarantees that there are exactly N lower case letters in the generated password
-func (g *generator) ExactLower(N int) *generator {
+func (g *Generator) ExactLower(N int) *Generator {
 	g.withLower = false
 	g.requireLower = N
 	return g
 }
 
 // ExactUpper guarantees that there are exactly N update case letters in the generated password
-func (g *generator) ExactUpper(N int) *generator {
+func (g *Generator) ExactUpper(N int) *Generator {
 	g.withUpper = false
 	g.requireUpper = N
 	return g
 }
 
 // ExactDigits guarantees that there are exactly N digits in the generated password
-func (g *generator) ExactDigits(N int) *generator {
+func (g *Generator) ExactDigits(N int) *Generator {
 	g.withDigits = false
 	g.requireDigits = N
 	return g
 }
 
 // ExactSymbols guarantees that there are exactly N symbols in the generated password
-func (g *generator) ExactSymbols(N int) *generator {
+func (g *Generator) ExactSymbols(N int) *Generator {
 	g.withSymbols = false
 	g.requireSymbols = N
 	return g
 }
 
 // Generate will generate a password at the specified length as configured.
-func (g *generator) Generate(length int) (string, error) {
+func (g *Generator) Generate(length int) (string, error) {
 	if !g.withLower && !g.withUpper && !g.withDigits && !g.withSymbols {
 		return "", ErrNoCharactersSpecified
 	}
@@ -213,7 +218,7 @@ func (g *generator) Generate(length int) (string, error) {
 	}
 
 	bufferLen := buffer.Len()
-	if buffer.Len() < length {
+	if bufferLen < length {
 		// Need to continue building the password pool
 		valuesBuilder := strings.Builder{}
 		if g.withLower {
