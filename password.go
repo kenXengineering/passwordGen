@@ -260,8 +260,8 @@ func (g *Generator) Generate(length int) (string, error) {
 		}
 	}
 
-	// We now have a buffer with the passwords elements in it, shuffle it
-	// Shuffle with shuffle the password in slice, so we have to cast it to a rune slice
+	// We now have a buffer with the passwords elements
+	// Shuffle shuffles the password in slice, so we have to cast it to a rune slice
 	// then back to a string.
 	pass := buffer.String()
 	runePass := []rune(pass)
@@ -271,7 +271,7 @@ func (g *Generator) Generate(length int) (string, error) {
 	return pass, nil
 }
 
-// shuffle shuffles the values in a run slice in place
+// shuffle shuffles the values in the slice in place
 func shuffle(vals []rune) {
 	for len(vals) > 0 {
 		n := len(vals)
