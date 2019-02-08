@@ -14,7 +14,7 @@ $ go get -u github.com/kenXengineering/passwordgen
 
 Generate a password with lower, upper case characters, digits, and symbols.
 
-```goland
+```golang
 package main
 
 import (
@@ -33,7 +33,7 @@ func main() {
 
 Generate a password with at least 1 lower case character, 1 upper case character, 2 digits, and no symbols.
 
-```goland
+```golang
 package main
 
 import (
@@ -52,7 +52,7 @@ func main() {
 
 Generate a password with lower case, upper case characters, at least 2 digits, and exactly 2 symbols.
 
-```goland
+```golang
 package main
 
 import (
@@ -71,7 +71,7 @@ func main() {
 
 Create a generator that can be used later on.
 
-```goland
+```golang
 package main
 
 import (
